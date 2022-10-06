@@ -2,6 +2,9 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import React, { useState, useEffect, useRef } from 'react';
 import { Text, View, Button, Platform } from 'react-native';
+import { CourierClient } from "@trycourier/courier";
+
+const courier = CourierClient({ authorizationToken: "YOUR_API_KEY" });
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -12,24 +15,24 @@ Notifications.setNotificationHandler({
 });
 
 async function sendPushNotification(expoPushToken) {
-  const message = {
-    to: expoPushToken,
-    sound: 'default',
-    title: 'Test title',
-    body: 'Test body',
-    data: { testData: 'test data' },
-  };
-
-  await fetch('https://exp.host/--/api/v2/push/send', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Accept-encoding': 'gzip, deflate',
-      'Content-Type': 'application/json',
+  const { requestId } = await courier.send({
+    message: {
+      to: {
+        expo: {
+          token: expoPushToken,
+        }
+      },
+      content: {
+        title: "Welcome!",
+        body: "From Courier",
+      },
+      data: {
+        fakeData: "data",
+      },
     },
-    body: JSON.stringify(message),
   });
 }
+
 
 async function registerForPushNotificationsAsync() {
   let token;
